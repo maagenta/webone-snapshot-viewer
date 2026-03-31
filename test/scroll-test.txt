@@ -1,0 +1,6 @@
+Testing:
+
+[√] On click
+[√] Web view position
+[x] Scroll
+[√] Updating using interval
