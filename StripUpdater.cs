@@ -77,10 +77,9 @@ namespace WebOne.SnapshotViewer
 		/// </summary>
 		public static string BuildViewReload(string key)
 		{
-			string viewUrl = "http://" + DimensionProbe.MagicHost + "/view?key=" + key;
 			return
 				"<HTML><BODY><SCRIPT LANGUAGE=\"JavaScript\">" +
-				"parent.location='" + viewUrl + "';" +
+				"parent.location=parent.location.href;" +
 				"</SCRIPT></BODY></HTML>";
 		}
 	}

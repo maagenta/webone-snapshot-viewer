@@ -40,7 +40,6 @@ namespace WebOne.SnapshotViewer
 				switch (requestUrl.AbsolutePath.ToLowerInvariant())
 				{
 					case "/snap":        HandleSnapshot(requestUrl);   break;
-					case "/view":        HandleView(requestUrl);        break;
 					case "/strip":       HandleStrip(requestUrl);       break;
 					case "/strip-frame": HandleStripFrame(requestUrl);  break;
 					case "/click":       HandleClick(requestUrl);       break;
@@ -80,7 +79,7 @@ namespace WebOne.SnapshotViewer
 			if (Cache.TryGetValue(sessionKey, out var existing) && DateTime.UtcNow - existing.CreatedAt < CacheTTL)
 			{
 				Log.WriteLine(" [Snapshot] Cache hit.");
-				SendHtml(SnapshotPage.GetShellPage(sessionKey, existing.ImageHeight));
+				SendHtml(SnapshotPage.GetShellPage(sessionKey, existing));
 				return;
 			}
 
@@ -105,22 +104,7 @@ namespace WebOne.SnapshotViewer
 			Cache[sessionKey] = strips;
 			Log.WriteLine(" [Snapshot] {0} strips created ({1}x{2}px).", strips.Strips.Length, strips.ImageWidth, strips.ImageHeight);
 
-			// Return the shell page (outer frame). The iframe inside will load /view.
-			SendHtml(SnapshotPage.GetShellPage(sessionKey, strips.ImageHeight));
-		}
-
-		private void HandleView(Uri requestUrl)
-		{
-			var qs = HttpUtility.ParseQueryString(requestUrl.Query);
-			string key = qs["key"];
-
-			if (string.IsNullOrEmpty(key) || !Cache.TryGetValue(key, out var stripSet))
-			{
-				SendHtml("<HTML><BODY><H1>Session not found.</H1></BODY></HTML>");
-				return;
-			}
-
-			SendHtml(SnapshotPage.GetViewContent(key, stripSet));
+			SendHtml(SnapshotPage.GetShellPage(sessionKey, strips));
 		}
 
 		private void HandleStripFrame(Uri requestUrl)

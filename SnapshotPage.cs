@@ -3,52 +3,32 @@ using System.Text;
 namespace WebOne.SnapshotViewer
 {
 	/// <summary>
-	/// Generates the HTML layers of the snapshot viewer.
+	/// Generates the HTML pages of the snapshot viewer.
 	///
-	/// Layer 1 — Shell page  (/snap):  outer page with one full-viewport iframe.
-	///            URL never changes. Returned once and kept by the browser.
+	/// Layer 1 — Shell page (/snap): scrollable page containing strip iframes,
+	///            cmd iframe, click overlay, and scroll script directly.
 	///
-	/// Layer 2 — View content (/view): stacks N strip iframes + a hidden cmd iframe.
-	///            Strip iframes are updated individually; the view page itself never reloads.
-	///
-	/// Layer 3 — Strip frame (/strip-frame): tiny HTML wrapper per strip image.
+	/// Layer 2 — Strip frame (/strip-frame): tiny HTML wrapper per strip image.
 	///            Only reloads when its strip pixel data changed.
 	/// </summary>
 	static class SnapshotPage
 	{
 		/// <summary>
-		/// Outer shell page. Contains a single full-viewport iframe pointing to /view.
+		/// Shell page. Contains strip iframes, cmd iframe, click overlay, and scroll script.
+		/// The page itself scrolls — no nested view iframe.
 		/// </summary>
-		public static string GetShellPage(string sessionKey, int imageHeight)
+		public static string GetShellPage(string sessionKey, StripSet strips)
 		{
-			string viewUrl   = "http://" + DimensionProbe.MagicHost + "/view?key=" + sessionKey;
 			string scriptUrl = "http://" + DimensionProbe.MagicHost + "/scroll.js?key=" + sessionKey;
-			return
-				"<HTML><HEAD><TITLE>Snapshot</TITLE>" +
-				"<STYLE TYPE=\"text/css\">" +
-				"HTML,BODY{margin:0;padding:0}" +
-				"IFRAME{display:block;width:100%;border:0}" +
-				"</STYLE>" +
-				"<SCRIPT LANGUAGE=\"JavaScript\" SRC=\"" + scriptUrl + "\"></SCRIPT>" +
-				"</HEAD><BODY>" +
-				"<IFRAME SRC=\"" + viewUrl + "\" FRAMEBORDER=\"0\" SCROLLING=\"NO\" WIDTH=\"100%\" HEIGHT=\"" + imageHeight + "\">" +
-				"</IFRAME>" +
-				"</BODY></HTML>";
-		}
 
-		/// <summary>
-		/// View content: one iframe per strip plus a hidden cmd iframe for click commands.
-		/// Returned by /view on initial load. Never replaced as a whole after that —
-		/// only individual strip iframes are updated via JS from the cmd iframe.
-		/// </summary>
-		public static string GetViewContent(string sessionKey, StripSet strips)
-		{
 			var sb = new StringBuilder();
 			sb.Append("<HTML><HEAD><TITLE>Snapshot</TITLE>");
 			sb.Append("<STYLE TYPE=\"text/css\">");
 			sb.Append("HTML,BODY{margin:0;padding:0;background:#000;font-size:0;line-height:0}");
 			sb.Append("IFRAME{display:block;width:100%;border:0;overflow:hidden;margin:0;padding:0;vertical-align:top}");
-			sb.Append("</STYLE></HEAD><BODY>");
+			sb.Append("</STYLE>");
+			sb.Append("<SCRIPT LANGUAGE=\"JavaScript\" SRC=\"" + scriptUrl + "\"></SCRIPT>");
+			sb.Append("</HEAD><BODY>");
 
 			for (int i = 0; i < strips.Strips.Length; i++)
 			{
@@ -66,7 +46,7 @@ namespace WebOne.SnapshotViewer
 					"</IFRAME>");
 			}
 
-			// Hidden cmd iframe — receives /click response which updates strip iframes via JS.
+			// Hidden cmd iframe — receives click/scroll responses and updates strip iframes via JS.
 			sb.Append(
 				"<IFRAME NAME=\"cmd\"" +
 				" SRC=\"about:blank\"" +
