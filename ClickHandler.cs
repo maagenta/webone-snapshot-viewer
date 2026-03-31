@@ -43,7 +43,7 @@ namespace WebOne.SnapshotViewer
 				  "var docY=(e.pageY!=null)?e.pageY:(e.clientY+(document.body.scrollTop||0));" +
 				  "var px=Math.round(docX*_sc);" +
 				  "var py=Math.round(docY*_sc);" +
-				  "window.frames['cmd'].location='http://" + DimensionProbe.MagicHost + "/click?key='+_key+'&x='+px+'&y='+py;" +
+				  "sendCmd('http://" + DimensionProbe.MagicHost + "/click?key='+_key+'&x='+px+'&y='+py);" +
 				"};" +
 				"</SCRIPT>";
 		}
@@ -111,12 +111,12 @@ namespace WebOne.SnapshotViewer
 			{
 				// Page height changed — full view reload needed to add/remove strip iframes.
 				log.WriteLine(" [Click] Strip count changed ({0} -> {1}), forcing view reload.", oldCount, stripSet.Strips.Length);
-				SendHtml(clientResponse, StripUpdater.BuildViewReload(key));
+				SendHtml(clientResponse, IFrameManager.BuildViewReload(key));
 				return;
 			}
 
 			// Partial update — JS navigates only the changed strip iframes.
-			SendHtml(clientResponse, StripUpdater.BuildPartialUpdate(key, stripSet, changed));
+			SendHtml(clientResponse, IFrameManager.BuildPartialUpdate(key, stripSet, changed));
 		}
 
 		private static void SendHtml(HttpResponse response, string html)

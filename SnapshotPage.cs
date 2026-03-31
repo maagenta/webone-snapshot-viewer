@@ -27,6 +27,9 @@ namespace WebOne.SnapshotViewer
 			sb.Append("HTML,BODY{margin:0;padding:0;background:#000;font-size:0;line-height:0}");
 			sb.Append("IFRAME{display:block;width:100%;border:0;overflow:hidden;margin:0;padding:0;vertical-align:top}");
 			sb.Append("</STYLE>");
+			sb.Append("<SCRIPT LANGUAGE=\"JavaScript\">");
+			sb.Append(IFrameManager.GetScript());
+			sb.Append("</SCRIPT>");
 			sb.Append("<SCRIPT LANGUAGE=\"JavaScript\" SRC=\"" + scriptUrl + "\"></SCRIPT>");
 			sb.Append("</HEAD><BODY>");
 
