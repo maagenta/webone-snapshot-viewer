@@ -21,6 +21,8 @@ namespace WebOne.SnapshotViewer
 		public byte[] Jpeg;
 		/// <summary>Timestamp string appended to the image URL to bust browser cache on change.</summary>
 		public string Revision;
+		/// <summary>Height of this strip in screenshot pixels.</summary>
+		public int Height;
 	}
 
 	/// <summary>
@@ -33,7 +35,9 @@ namespace WebOne.SnapshotViewer
 		public int ImageHeight;
 		public int StripHeight;
 		public int ViewportHeight;
+		public int NumberStripsInViewport;
 		public int LastScrollY;
+		public byte[] BlankStripGif;
 		public DateTime CreatedAt;
 	}
 
@@ -62,7 +66,8 @@ namespace WebOne.SnapshotViewer
 				{
 					Hash = Hash(strip),
 					Jpeg = EncodeJpeg(strip),
-					Revision = rev
+					Revision = rev,
+					Height = h
 				};
 			}
 
@@ -73,6 +78,8 @@ namespace WebOne.SnapshotViewer
 				ImageHeight = image.Height,
 				StripHeight = stripHeight,
 				ViewportHeight = viewportHeight,
+				NumberStripsInViewport = viewportHeight / stripHeight,
+				BlankStripGif = BlankStrip.Generate(image.Width, stripHeight),
 				CreatedAt = DateTime.UtcNow
 			};
 		}
@@ -112,7 +119,8 @@ namespace WebOne.SnapshotViewer
 					{
 						Hash = newHash,
 						Jpeg = EncodeJpeg(strip),
-						Revision = rev
+						Revision = rev,
+						Height = h
 					};
 					changed.Add(i);
 				}

@@ -134,7 +134,6 @@ namespace WebOne.SnapshotViewer
 			catch (TimeoutException)
 			{
 				// No navigation — JS-only interaction (dropdown, modal, etc.)
-				await page.WaitForTimeoutAsync(400);
 			}
 
 			return await Screenshot(sessionKey);

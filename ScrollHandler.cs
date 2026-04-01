@@ -19,10 +19,23 @@ namespace WebOne.SnapshotViewer
 		/// Returns the scroll-sync JS served at /scroll.js.
 		/// ES3-only, Safari 1 compatible.
 		/// </summary>
-		public static string GetScrollScript(string sessionKey)
+		public static string GetScrollScript(string sessionKey, StripSet strips)
 		{
 			string scrollBase = "http://" + DimensionProbe.MagicHost + "/scroll-pos?key=" + sessionKey + "&y=";
+			string stripBase  = "http://" + DimensionProbe.MagicHost + "/strip?key=" + sessionKey + "&i=";
+
+			// Build strip URL array: _srcs[i] = url for strip i.
+			var srcs = new System.Text.StringBuilder();
+			srcs.Append("var _srcs=[");
+			for (int i = 0; i < strips.Strips.Length; i++)
+			{
+				if (i > 0) srcs.Append(",");
+				srcs.Append("'" + stripBase + i + "&r=" + strips.Strips[i].Revision + "'");
+			}
+			srcs.Append("];");
+
 			return
+				srcs.ToString() +
 				"window.status='scroll.js loaded';" +
 				"function _getScrollY(){" +
 				  "if(document.body&&document.body.scrollTop)return document.body.scrollTop;" +
@@ -30,7 +43,7 @@ namespace WebOne.SnapshotViewer
 				  "if(window.pageYOffset!=null)return window.pageYOffset;" +
 				  "return 0;" +
 				"}" +
-				"var _lastY=-1;" +
+				"var _lastY= _getScrollY();" +
 				"function _sendScroll(){" +
 				  "var sy=_getScrollY();" +
 				  "if(sy==_lastY)return;" +
@@ -38,29 +51,18 @@ namespace WebOne.SnapshotViewer
 				  "window.status='scroll y='+sy;" +
 				  "var img=new Image();" +
 				  "img.src='" + scrollBase + "'+sy+'&t='+(new Date().getTime());" +
+				  "var firstStrip=Math.floor(sy/" + strips.StripHeight + ");" +
+				  "var lastStrip=Math.min(document.images.length-1,firstStrip+" + strips.NumberStripsInViewport + "+2);" +
+				  "for(var i=firstStrip;i<=lastStrip;i++){" +
+				    "document.images[i].src=_srcs[i];" +
+				  "}" +
 				"}" +
-				"setInterval('_sendScroll()',50);";
+				"window.onscroll=_sendScroll;" +
+				"setInterval('_sendScroll()',200);";
 		}
 
 		/// <summary>
 		/// Serves the scroll-sync JS at /scroll.js.
-		/// </summary>
-		public static void HandleScrollJs(
-			Uri requestUrl,
-			HttpResponse clientResponse,
-			Dictionary<string, StripSet> cache)
-		{
-			var qs = HttpUtility.ParseQueryString(requestUrl.Query);
-			string key = qs["key"] ?? "";
-			byte[] buffer = Encoding.UTF8.GetBytes(GetScrollScript(key));
-			clientResponse.StatusCode = 200;
-			clientResponse.ContentType = "text/javascript";
-			clientResponse.ContentLength64 = buffer.Length;
-			clientResponse.SendHeaders();
-			clientResponse.OutputStream.Write(buffer, 0, buffer.Length);
-			clientResponse.Close();
-		}
-
 		/// <summary>
 		/// Scrolls the Playwright page to the given Y position.
 		/// Returns a 1×1 transparent GIF so the browser Image() request completes.

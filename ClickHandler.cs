@@ -111,12 +111,12 @@ namespace WebOne.SnapshotViewer
 			{
 				// Page height changed — full view reload needed to add/remove strip iframes.
 				log.WriteLine(" [Click] Strip count changed ({0} -> {1}), forcing view reload.", oldCount, stripSet.Strips.Length);
-				SendHtml(clientResponse, IFrameManager.BuildViewReload(key));
+				SendHtml(clientResponse, ClientStripManager.BuildViewReload(key));
 				return;
 			}
 
-			// Partial update — JS navigates only the changed strip iframes.
-			SendHtml(clientResponse, IFrameManager.BuildPartialUpdate(key, stripSet, changed));
+			// Partial update — JS updates only the changed strip images.
+			SendHtml(clientResponse, ClientStripManager.BuildPartialUpdate(key, stripSet, changed));
 		}
 
 		private static void SendHtml(HttpResponse response, string html)

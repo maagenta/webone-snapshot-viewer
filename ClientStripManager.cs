@@ -4,11 +4,11 @@ using System.Text;
 namespace WebOne.SnapshotViewer
 {
 	/// <summary>
-	/// Manages all iframe communication in the snapshot viewer.
+	/// Manages all client-side strip rendering and updates.
 	///
 	/// Client-side JS (injected via GetScript):
 	///   - sendCmd(url)          — navigates the cmd iframe to send a request to the server
-	///   - updateStrip(name,url) — navigates a strip iframe to load a new image
+	///   - updateStrip(name,url) — updates the src of a strip image element
 	///   - reloadPage()          — reloads the shell page
 	///
 	/// Server-side builders (responses loaded inside the cmd iframe):
@@ -17,7 +17,7 @@ namespace WebOne.SnapshotViewer
 	///   - BuildFullUpdate       — updates all strips
 	///   - BuildViewReload       — reloads the shell page
 	/// </summary>
-	static class IFrameManager
+	static class ClientStripManager
 	{
 		/// <summary>
 		/// Returns the JS library injected into the shell page.
@@ -30,11 +30,12 @@ namespace WebOne.SnapshotViewer
 				"function sendCmd(url){" +
 				  "window.frames['cmd'].location=url;" +
 				"}" +
-				// Navigates a single strip iframe to load a new image.
+				// Updates the src of a strip image element directly.
 				"function updateStrip(name,url){" +
-				  "if(window.frames[name])window.frames[name].location=url;" +
+				  "var img=document.getElementById(name);" +
+				  "if(img)img.src=url;" +
 				"}" +
-				// Reloads the shell page to rebuild all strip iframes.
+				// Reloads the shell page to rebuild all strip images.
 				"function reloadPage(){" +
 				  "window.location=window.location.href;" +
 				"}";
@@ -51,7 +52,7 @@ namespace WebOne.SnapshotViewer
 			foreach (int i in changed)
 			{
 				string url = "http://" + DimensionProbe.MagicHost +
-				             "/strip-frame?key=" + key +
+				             "/strip?key=" + key +
 				             "&i=" + i +
 				             "&r=" + strips.Strips[i].Revision;
 				sb.Append("parent.updateStrip('strip" + i + "','" + url + "');");
@@ -78,7 +79,7 @@ namespace WebOne.SnapshotViewer
 			for (int i = firstStrip; i <= lastStrip; i++)
 			{
 				string url = "http://" + DimensionProbe.MagicHost +
-				             "/strip-frame?key=" + key +
+				             "/strip?key=" + key +
 				             "&i=" + i +
 				             "&r=" + strips.Strips[i].Revision;
 				sb.Append("parent.updateStrip('strip" + i + "','" + url + "');");
@@ -101,7 +102,7 @@ namespace WebOne.SnapshotViewer
 
 		/// <summary>
 		/// Builds a JS page loaded in the cmd iframe that reloads the shell page.
-		/// Used when the strip count changed and iframes need to be recreated.
+		/// Used when the strip count changed and images need to be recreated.
 		/// </summary>
 		public static string BuildViewReload(string key)
 		{

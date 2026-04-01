@@ -39,12 +39,11 @@ namespace WebOne.SnapshotViewer
 			{
 				switch (requestUrl.AbsolutePath.ToLowerInvariant())
 				{
-					case "/snap":        HandleSnapshot(requestUrl);   break;
-					case "/strip":       HandleStrip(requestUrl);       break;
-					case "/strip-frame": HandleStripFrame(requestUrl);  break;
-					case "/click":       HandleClick(requestUrl);       break;
+					case "/snap":         HandleSnapshot(requestUrl);    break;
+					case "/strip":        HandleStrip(requestUrl);        break;
+					case "/blank-strip":  HandleBlankStrip(requestUrl);  break;
+					case "/click":        HandleClick(requestUrl);        break;
 					case "/scroll-pos":  HandleScrollPos(requestUrl);   break;
-					case "/scroll.js":   HandleScrollJs(requestUrl);    break;
 					default:
 						SendHtml("<HTML><BODY><H1>Unknown endpoint.</H1></BODY></HTML>");
 						break;
@@ -107,22 +106,24 @@ namespace WebOne.SnapshotViewer
 			SendHtml(SnapshotPage.GetShellPage(sessionKey, strips));
 		}
 
-		private void HandleStripFrame(Uri requestUrl)
+		private void HandleBlankStrip(Uri requestUrl)
 		{
 			var qs = HttpUtility.ParseQueryString(requestUrl.Query);
 			string key = qs["key"];
-			string iStr = qs["i"];
-			string rev = qs["r"] ?? "0";
 
-			if (string.IsNullOrEmpty(key) || !int.TryParse(iStr, out int index))
+			if (string.IsNullOrEmpty(key) || !Cache.TryGetValue(key, out var stripSet))
 			{
-				SendHtml("<HTML><BODY><H1>Invalid strip-frame request.</H1></BODY></HTML>");
+				SendHtml("<HTML><BODY><H1>Session not found.</H1></BODY></HTML>");
 				return;
 			}
 
-			string imgUrl = "http://" + DimensionProbe.MagicHost +
-			                "/strip?key=" + key + "&i=" + index + "&r=" + rev;
-			SendHtml(SnapshotPage.GetStripFrame(imgUrl));
+			byte[] gif = stripSet.BlankStripGif;
+			ClientResponse.StatusCode = 200;
+			ClientResponse.ContentType = "image/gif";
+			ClientResponse.ContentLength64 = gif.Length;
+			ClientResponse.SendHeaders();
+			ClientResponse.OutputStream.Write(gif, 0, gif.Length);
+			ClientResponse.Close();
 		}
 
 		private void HandleStrip(Uri requestUrl)
@@ -159,12 +160,7 @@ namespace WebOne.SnapshotViewer
 			ScrollHandler.HandleScrollPos(requestUrl, ClientResponse, Log, Cache);
 		}
 
-		private void HandleScrollJs(Uri requestUrl)
-		{
-			ScrollHandler.HandleScrollJs(requestUrl, ClientResponse, Cache);
-		}
-
-		private void SendHtml(string html)
+private void SendHtml(string html)
 		{
 			byte[] buffer = Encoding.UTF8.GetBytes(html);
 			ClientResponse.StatusCode = 200;
