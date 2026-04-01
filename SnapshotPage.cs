@@ -69,21 +69,8 @@ namespace WebOne.SnapshotViewer
 		public static string GetStripFrame(string stripImageUrl)
 		{
 			return
-				"<HTML><BODY STYLE=\"margin:0;padding:0;overflow:hidden;background:#fff;line-height:0;font-size:0\">" +
-				"<SCRIPT LANGUAGE=\"JavaScript\">" +
-				"function _load(){" +
-				  "var img=new Image();" +
-				  "img.onload=function(){" +
-				    "img.style.width='100%';" +
-				    "img.style.display='block';" +
-				    "img.style.verticalAlign='top';" +
-				    "document.body.appendChild(img);" +
-				  "};" +
-				  "img.onerror=function(){setTimeout(_load,1000)};" +
-				  "img.src='" + stripImageUrl + "&_t='+(new Date().getTime());" +
-				"}" +
-				"_load();" +
-				"</SCRIPT>" +
+				"<HTML><BODY STYLE=\"margin:0;padding:0;overflow:hidden;background:#000;line-height:0;font-size:0\">" +
+				"<IMG SRC=\"" + stripImageUrl + "\" WIDTH=\"100%\" HEIGHT=\"100%\" STYLE=\"display:block;vertical-align:top\">" +
 				"</BODY></HTML>";
 		}
 	}

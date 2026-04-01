@@ -154,7 +154,7 @@ namespace WebOne.SnapshotViewer
 			finally { _sessionsLock.Release(); }
 		}
 
-		private static async Task EnsureContextAsync()
+		public static async Task EnsureContextAsync()
 		{
 			if (_context != null) return;
 
