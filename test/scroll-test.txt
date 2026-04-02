@@ -2,5 +2,5 @@ Testing:
 
 [√] On click
 [√] Web view position
-[x] Scroll
+[x] OnScroll Event
 [√] Updating using interval
