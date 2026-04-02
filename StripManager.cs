@@ -142,7 +142,7 @@ namespace WebOne.SnapshotViewer
 		private static byte[] EncodeJpeg(Image<Rgb24> image)
 		{
 			using var ms = new MemoryStream();
-			image.SaveAsJpeg(ms, new JpegEncoder { Quality = Program.JpegQuality });
+			image.SaveAsJpeg(ms, new JpegEncoder { Quality = Program.JpegQuality, ColorType = JpegEncodingColor.Rgb });
 			return ms.ToArray();
 		}
 
