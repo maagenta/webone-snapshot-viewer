@@ -125,7 +125,9 @@ namespace WebOne.SnapshotViewer
 				Timeout = 3000
 			});
 
-			await page.Mouse.ClickAsync(x, y);
+			await page.EvaluateAsync("(y) => window.scrollTo(0, y - window.innerHeight/2)", y);
+			int scrollY = await page.EvaluateAsync<int>("window.scrollY");
+			await page.Mouse.ClickAsync(x, y - scrollY);
 
 			try
 			{

@@ -39,10 +39,10 @@ namespace WebOne.SnapshotViewer
 				"_ov.style.height=Math.ceil(_sh/_sc)+'px';" +
 				"_ov.onclick=function(e){" +
 				  "e=e||window.event;" +
-				  "var docX=(e.pageX!=null)?e.pageX:(e.clientX+(document.body.scrollLeft||0));" +
-				  "var docY=(e.pageY!=null)?e.pageY:(e.clientY+(document.body.scrollTop||0));" +
-				  "var px=Math.round(docX*_sc);" +
-				  "var py=Math.round(docY*_sc);" +
+				  "var px=e.pageX || 0;" +
+				  "var py=e.pageY || 0;" +
+				  //"var px=Math.round(pointerX*_sc);" +
+				  //"var py=Math.round(pointerY*_sc);" +
 				  "sendCmd('http://" + DimensionProbe.MagicHost + "/click?key='+_key+'&x='+px+'&y='+py);" +
 				"};" +
 				"</SCRIPT>";

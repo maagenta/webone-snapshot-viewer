@@ -36,29 +36,32 @@ namespace WebOne.SnapshotViewer
 
 			return
 				srcs.ToString() +
-				"window.status='scroll.js loaded';" +
 				"function _getScrollY(){" +
-				  "if(document.body&&document.body.scrollTop)return document.body.scrollTop;" +
-				  "if(document.documentElement&&document.documentElement.scrollTop)return document.documentElement.scrollTop;" +
 				  "if(window.pageYOffset!=null)return window.pageYOffset;" +
 				  "return 0;" +
 				"}" +
-				"var _lastY= _getScrollY();" +
-				"function _sendScroll(){" +
-				  "var sy=_getScrollY();" +
-				  "if(sy==_lastY)return;" +
-				  "_lastY=sy;" +
-				  "window.status='scroll y='+sy;" +
+				"function _sendScroll(sy){" +
 				  "var img=new Image();" +
 				  "img.src='" + scrollBase + "'+sy+'&t='+(new Date().getTime());" +
+				"}" +
+				"function _loadStrips(sy){" +
 				  "var firstStrip=Math.floor(sy/" + strips.StripHeight + ");" +
 				  "var lastStrip=Math.min(document.images.length-1,firstStrip+" + strips.NumberStripsInViewport + "+2);" +
 				  "for(var i=firstStrip;i<=lastStrip;i++){" +
 				    "document.images[i].src=_srcs[i];" +
 				  "}" +
 				"}" +
-				"window.onscroll=_sendScroll;" +
-				"setInterval('_sendScroll()',200);";
+				"var _lastY=_getScrollY();" +
+				"function _scroll(){" +
+				  "var sy=_getScrollY();" +
+				  "if(sy==_lastY)return;" +
+				  "_lastY=sy;" +
+				  "_loadStrips(sy);" +
+				  "_sendScroll(sy);" +
+				  "window.status='scroll y='+sy;" +
+				"}" +
+				"window.onscroll=_scroll;" +
+				"setInterval('_scroll()',200);";
 		}
 
 		/// <summary>
